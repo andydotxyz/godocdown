@@ -25,9 +25,8 @@ http://github.com/robertkrimen/godocdown/blob/master/example.markdown
 
 Usage
 
-    -output=""                                                                       
-        Write output to a file instead of stdout                                     
-        Write to stdout with -                                                       
+    -outputDir=""                                                                       
+        Write output to a named directory instead of current                                     
                                                                                      
     -template=""                                                                     
         The template file to use                                                     
@@ -107,6 +106,7 @@ import (
 	"go/printer"
 	"go/token"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -127,10 +127,10 @@ var (
 	flag_heading    = flag.String("heading", "TitleCase1Word", "Heading detection method: 1Word, TitleCase, Title, TitleCase1Word, \"\"")
 	flag_template   = flag.String("template", "", "The template file to use")
 	flag_noTemplate = flag.Bool("no-template", false, "Disable template processing")
-	flag_output     = ""
+	flag_outputDir  = ""
 	_               = func() byte {
-		flag.StringVar(&flag_output, "output", flag_output, "Write output to a file instead of stdout. Write to stdout with -")
-		flag.StringVar(&flag_output, "o", flag_output, string(0))
+		flag.StringVar(&flag_outputDir, "outputDir", flag_outputDir, "Write output to a named directory instead of current")
+		flag.StringVar(&flag_outputDir, "o", flag_outputDir, string(0))
 		return 0
 	}()
 )
@@ -586,6 +586,16 @@ func main() {
 		}
 	}
 
+	outDir := flag_outputDir
+	if flag_outputDir == "" {
+		pwd, err := os.Getwd()
+		if err != nil {
+			log.Println("Error reading working directory", err)
+		} else {
+			outDir = pwd
+		}
+	}
+
 	template := loadTemplate(document)
 
 	var buffer bytes.Buffer
@@ -608,13 +618,9 @@ func main() {
 
 	documentation := buffer.String()
 	documentation = strings.TrimSpace(documentation)
-	if flag_output == "" || flag_output == "-" {
-		fmt.Println(documentation)
-	} else {
-		file, err := os.Create(flag_output)
-		if err != nil {
-		}
-		defer file.Close()
-		_, err = fmt.Fprintln(file, documentation)
+	file, err := os.Create(filepath.Join(outDir, "index.md"))
+	if err != nil {
 	}
+	defer file.Close()
+	_, err = fmt.Fprintln(file, documentation)
 }
