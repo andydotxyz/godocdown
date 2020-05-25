@@ -206,6 +206,7 @@ type _document struct {
 	buildPkg   *build.Package
 	IsCommand  bool
 	ImportPath string
+	Type       *doc.Type
 }
 
 func takeOut7f(input string) string {
@@ -444,7 +445,9 @@ func (self *_document) EmitTo(buffer *bytes.Buffer) {
 	self.EmitHeaderTo(buffer)
 
 	// Synopsis
-	self.EmitSynopsisTo(buffer)
+	if self.Type == nil { // index
+		self.EmitSynopsisTo(buffer)
+	}
 
 	// Usage
 	if !self.IsCommand {
@@ -499,6 +502,12 @@ func (self *_document) EmitUsage() string {
 
 func (self *_document) EmitUsageTo(buffer *bytes.Buffer) {
 	renderUsageTo(buffer, self)
+
+	if self.Type == nil {
+		renderTypeListTo(buffer, self.pkg.Types)
+	} else {
+		renderTypeTo(buffer, self.Type)
+	}
 }
 
 var templateNameList = strings.Fields(`
@@ -596,7 +605,23 @@ func main() {
 		}
 	}
 
+	writeDoc(document, outDir)
+	for _, t := range document.pkg.Types {
+		document.Type = t
+		writeDoc(document, outDir)
+	}
+}
+
+func typeFileName(t *doc.Type) string {
+	return strings.ToLower(t.Name)
+}
+
+func writeDoc(document *_document, outDir string) {
 	template := loadTemplate(document)
+	fileName := "index.md"
+	if document.Type != nil {
+		fileName = typeFileName(document.Type)+".md"
+	}
 
 	var buffer bytes.Buffer
 	if template == nil {
@@ -618,7 +643,7 @@ func main() {
 
 	documentation := buffer.String()
 	documentation = strings.TrimSpace(documentation)
-	file, err := os.Create(filepath.Join(outDir, "index.md"))
+	file, err := os.Create(filepath.Join(outDir, fileName))
 	if err != nil {
 	}
 	defer file.Close()

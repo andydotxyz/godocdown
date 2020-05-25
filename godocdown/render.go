@@ -34,16 +34,20 @@ func renderFunctionSectionTo(writer io.Writer, list []*doc.Func, inTypeSection b
 	}
 }
 
-func renderTypeSectionTo(writer io.Writer, list []*doc.Type) {
-
+func renderTypeTo(writer io.Writer, entry *doc.Type) {
 	header := RenderStyle.TypeHeader
 
-	for _, entry := range list {
-		fmt.Fprintf(writer, "%s type %s\n\n%s\n\n%s\n", header, entry.Name, indentCode(sourceOfNode(entry.Decl)), formatIndent(filterText(entry.Doc)))
-		renderConstantSectionTo(writer, entry.Consts)
-		renderVariableSectionTo(writer, entry.Vars)
-		renderFunctionSectionTo(writer, entry.Funcs, true)
-		renderFunctionSectionTo(writer, entry.Methods, true)
+	fmt.Fprintf(writer, "%s type %s\n\n%s\n\n%s\n", header, entry.Name, indentCode(sourceOfNode(entry.Decl)), formatIndent(filterText(entry.Doc)))
+	renderConstantSectionTo(writer, entry.Consts)
+	renderVariableSectionTo(writer, entry.Vars)
+	renderFunctionSectionTo(writer, entry.Funcs, true)
+	renderFunctionSectionTo(writer, entry.Methods, true)
+}
+
+func renderTypeListTo(writer io.Writer, list []*doc.Type) {
+	fmt.Fprintf(writer, "%s types\n\n",  RenderStyle.TypeHeader) // TODO
+	for _, t := range list {
+		fmt.Fprintf(writer, " * [%s](%s)\n", t.Name, typeFileName(t)+".html")
 	}
 }
 
@@ -68,6 +72,10 @@ func renderUsageTo(writer io.Writer, document *_document) {
 	// Usage
 	fmt.Fprintf(writer, "%s\n", RenderStyle.UsageHeader)
 
+	if document.Type != nil {
+		return
+	}
+
 	// Constant Section
 	renderConstantSectionTo(writer, document.pkg.Consts)
 
@@ -76,9 +84,6 @@ func renderUsageTo(writer io.Writer, document *_document) {
 
 	// Function Section
 	renderFunctionSectionTo(writer, document.pkg.Funcs, false)
-
-	// Type Section
-	renderTypeSectionTo(writer, document.pkg.Types)
 }
 
 func renderSignatureTo(writer io.Writer) {
