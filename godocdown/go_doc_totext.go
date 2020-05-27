@@ -267,7 +267,7 @@ func (l *lineWrapper) write(text string) {
 	for _, f := range strings.Fields(text) {
 		w := utf8.RuneCountInString(f)
 		// wrap if line is too long
-		if l.n > 0 && l.n+l.pendSpace+w > l.width {
+		if l.width != -1 && l.n > 0 && l.n+l.pendSpace+w > l.width {
 			l.out.Write(nl)
 			l.n = 0
 			l.pendSpace = 0
