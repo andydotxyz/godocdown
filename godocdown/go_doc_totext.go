@@ -234,6 +234,7 @@ func toText(w io.Writer, text string, indent, preIndent string, width int) {
 			l.flush()
 		case opPre:
 			w.Write(nl)
+			w.Write([]byte("```go\n"))
 			for _, line := range b.lines {
 				if !isBlank(line) {
 					w.Write([]byte(preIndent))
@@ -242,6 +243,7 @@ func toText(w io.Writer, text string, indent, preIndent string, width int) {
 					w.Write([]byte(line))
 				}
 			}
+			w.Write([]byte("```\n"))
 		}
 	}
 }
