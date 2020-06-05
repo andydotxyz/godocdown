@@ -223,6 +223,18 @@ func toText(w io.Writer, text string, indent, preIndent string, width int) {
 		case opPara:
 			// l.write will add leading newline if required
 			for _, line := range b.lines {
+				if strings.Index(line, "Deprecated:") == 0 {
+					l.out.Write([]byte("\n\n<div class=\"deprecated\">"))
+					l.write(line)
+					l.out.Write([]byte("</div>"))
+					continue
+				}
+				if strings.Index(line, "Implements:") == 0 {
+					l.out.Write([]byte("\n\n<div class=\"implements\">Implements: <code>"))
+					l.write(line[11:])
+					l.out.Write([]byte("</code></div>"))
+					continue
+				}
 				l.write(line)
 			}
 			l.flush()
