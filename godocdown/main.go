@@ -606,7 +606,9 @@ func main() {
 	}
 
 	writeDoc(document, outDir)
+	docName := document.Name
 	for _, t := range document.pkg.Types {
+		document.Name = docName + "." + t.Name
 		document.Type = t
 		writeDoc(document, outDir)
 	}

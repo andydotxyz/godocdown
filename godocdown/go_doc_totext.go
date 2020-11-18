@@ -235,6 +235,12 @@ func toText(w io.Writer, text string, indent, preIndent string, width int) {
 					l.out.Write([]byte("</code></div>"))
 					continue
 				}
+				if strings.Index(line, "Since:") == 0 {
+					l.out.Write([]byte("\n\n<div class=\"since\">Since: <code>"))
+					l.write(line[6:])
+					l.out.Write([]byte("</code></div>"))
+					continue
+				}
 				l.write(line)
 			}
 			l.flush()
